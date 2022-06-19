@@ -1,10 +1,11 @@
 package app
 
 import (
-	"fmt"
 	"os"
 	"strings"
 )
+
+// TODO maybe compress the stage
 
 type stageEntry struct {
 	path    string
@@ -13,17 +14,22 @@ type stageEntry struct {
 
 type stage []stageEntry
 
-func (sd stage) saveToFile(filepath string) error {
-	file, err := openFileWriteOnly(filepath)
+func getStage(stageFile string) (*stage, error) {
+	data, err := os.ReadFile(stageFile)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, entry := range sd {
-		fmt.Fprintf(file, "%s\t%s\n", entry.path, entry.modTime)
-	}
+	lines := strings.Split(string(data), "\n")
+	stage := make(stage, 0)
 
-	return nil
+	for _, line := range lines {
+		entryData := strings.Split(line, "\t")
+		if len(entryData) > 1 && len(entryData[0]) > 0 {
+			stage = append(stage, stageEntry{entryData[0], entryData[1]})
+		}
+	}
+	return &stage, nil
 }
 
 func (sd *stage) addFile(filepath string) error {
@@ -31,26 +37,33 @@ func (sd *stage) addFile(filepath string) error {
 	if err != nil {
 		return err
 	}
-  
-  entry := stageEntry{filepath, modTime}
 
-  if exists, entryIndex := sd.checkEntryExists(entry); exists {
-    (*sd)[entryIndex] = entry;
-    return nil
-  }
+	entry := stageEntry{filepath, modTime}
 
-  *sd = append(*sd, entry)
-  return nil
+	if exists, entryIndex := sd.checkEntryExists(entry); exists {
+		(*sd)[entryIndex] = entry
+		return nil
+	}
+
+	*sd = append(*sd, entry)
+	return nil
+}
+
+func (sd stage) saveToFile(path string) error {
+  var data strings.Builder
+	for _, entry := range sd {
+    data.WriteString(entry.path + "\t" + entry.modTime + "\n")
+	}
+	return writeToFile(path, data.String())
 }
 
 func (sd stage) checkEntryExists(entry stageEntry) (bool, int) {
-  for i, e := range sd {
-    if e.path == entry.path {
-      return true, i
-    }
-  }
-
-  return false, 0
+	for i, e := range sd {
+		if e.path == entry.path {
+			return true, i
+		}
+	}
+	return false, 0
 }
 
 func (sd stage) Len() int {
@@ -60,25 +73,7 @@ func (sd stage) Len() int {
 func (sd stage) Swap(i, j int) {
 	sd[i], sd[j] = sd[j], sd[i]
 }
+
 func (sd stage) Less(i, j int) bool {
 	return sd[i].path > sd[j].path
-}
-
-func getStageFromFile(file string) (*stage, error) {
-  data, err := os.ReadFile(file)
-  if err != nil {
-    return nil, err
-  }
-
-  lines := strings.Split(string(data), "\n");
-  stage := make(stage, 0)
-
-  for _, line := range lines {
-    entryData := strings.Split(line, "\t")
-    if len(entryData) > 1 && len(entryData[0]) > 0 {
-      stage = append(stage, stageEntry{entryData[0], entryData[1]})
-    }
-  }
-
-  return &stage, nil
 }

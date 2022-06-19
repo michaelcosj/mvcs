@@ -1,17 +1,18 @@
 package app
 
 import (
+	"compress/zlib"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 )
 
 const (
 	// mvcs paths
-	MVCS_DIR   = ".mvcs"
-	COMMIT_DIR = MVCS_DIR + "/commits"
-	TREE_DIR   = MVCS_DIR + "/trees"
-	BLOB_DIR   = MVCS_DIR + "/blobs"
+	MVCS_DIR = ".mvcs"
+	OBJ_DIR  = MVCS_DIR + "/objects"
 
 	// mvcs files
 	HEAD_FILE  = MVCS_DIR + "/HEAD"
@@ -55,19 +56,40 @@ func Run() error {
 		}
 		fmt.Println("mvcs init done")
 	case "add":
+		if len(os.Args) < 3 {
+			return fmt.Errorf("not enough arguments for mvcs add")
+		}
 		paths := os.Args[2:]
 		if err := runAdd(paths...); err != nil {
 			return fmt.Errorf("mvcs add failed: %s", err.Error())
 		}
 		fmt.Println("mvcs add done")
 	case "commit":
-		if err := runCommit(); err != nil {
+		if len(os.Args) < 3 {
+			return fmt.Errorf("not enough arguments for mvcs commit")
+		}
+		msg := os.Args[2]
+		if err := runCommit(msg); err != nil {
 			return fmt.Errorf("mvcs commit failed: %s", err.Error())
 		}
 		fmt.Println("mvcs commit done")
 	case "status":
 	case "revert":
 	case "history":
+	case "read-hash":
+		if len(os.Args) < 3 {
+			return fmt.Errorf("not enough arguments for mvcs cat-file")
+		}
+		hash := os.Args[2]
+		fp, err := openFile(filepath.Join(OBJ_DIR, hash))
+		if err != nil {
+			return err
+		}
+		defer fp.Close()
+
+		r, err := zlib.NewReader(fp)
+		io.Copy(os.Stdout, r)
+		r.Close()
 	default:
 		runHelp(program)
 		return fmt.Errorf("Invalid command '%s'", command)

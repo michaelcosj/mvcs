@@ -1,22 +1,42 @@
 package app
 
-import "fmt"
+import "os"
 
-func runCommit() error {
-  // parse STAGE file and get list of files to be commited
-  stage, err := getStageFromFile(STAGE_FILE)
-  if err != nil {
-    return err
-  }
-  fmt.Println(stage)
-  // hash file content
-  // create metadata for directories and hash it
-  // create commit metadata and hash it
-  // gzip files and store in BLOBS directory
-  // gzip tree metadatas and store in trees directory
-  // gzip commit metadatas and store in commit directory
-  // clear STAGE
-  // update HEAD with the hash of the latest commit
+func runCommit(msg string) error {
+	stg, err := getStage(STAGE_FILE)
+	if err != nil {
+		return err
+	}
 
-  return nil
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	tree := newTreeData(workingDir)
+	for _, stagedFile := range *stg {
+		fileData, err := newFileData(stagedFile.path)
+		if err != nil {
+			return err
+		}
+
+		tree.addChild(fileData)
+	}
+	if err := tree.generateHash(); err != nil {
+		return err
+	}
+
+	parentCommit, err := getFileContent(HEAD_FILE)
+	if err != nil {
+		return err
+	}
+
+	commit := newCommitData(parentCommit, msg, tree)
+	commit.compressData(OBJ_DIR)
+
+	if err := clearFiles(STAGE_FILE, HEAD_FILE); err != nil {
+		return err
+	}
+
+	return writeToFile(HEAD_FILE, commit.hash)
 }

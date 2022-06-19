@@ -5,26 +5,22 @@ import (
 	"fmt"
 )
 
-// Creates mvcs files and directories
 func runInit() error {
-	// Check if mvcs dir exists and return error if it does
 	pathExists, err := checkPathExists(MVCS_DIR)
-
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking mvcs dir: %w", err)
 	}
 
 	if pathExists {
 		return errors.New(".mvcs directory already exists")
 	}
 
-	// Create mvcs files and directories
-	if err := createDirs(MVCS_DIR, COMMIT_DIR, TREE_DIR, BLOB_DIR); err != nil {
-		return err
+	if err := createDirs(MVCS_DIR, OBJ_DIR); err != nil {
+		return fmt.Errorf("error creating mvcs directories: %w", err)
 	}
 
 	if err := createFiles(HEAD_FILE, STAGE_FILE, CFG_FILE, LOGS_FILE); err != nil {
-		return err
+		return fmt.Errorf("error creating mvcs files: %w", err)
 	}
 
 	return nil
