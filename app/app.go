@@ -1,26 +1,13 @@
 package app
 
 import (
-	"compress/zlib"
 	"errors"
 	"fmt"
-	"io"
+	"michaelcosj/mvcs/app/commands"
+	"michaelcosj/mvcs/app/constants"
+	"michaelcosj/mvcs/app/helpers"
 	"os"
 	"path/filepath"
-)
-
-const (
-	// mvcs paths
-	MVCS_DIR = ".mvcs"
-	OBJ_DIR  = MVCS_DIR + "/objects"
-
-	// mvcs files
-	HEAD_FILE  = MVCS_DIR + "/HEAD"
-	STAGE_FILE = MVCS_DIR + "/STAGE"
-	CFG_FILE   = MVCS_DIR + "/config"
-	LOGS_FILE  = MVCS_DIR + "/logs"
-
-	TIME_FORMAT = "2006-01-02|15:04:05"
 )
 
 // Run help command
@@ -51,7 +38,7 @@ func Run() error {
 	case "help":
 		runHelp(program)
 	case "init":
-		if err := runInit(); err != nil {
+		if err := commands.RunInit(); err != nil {
 			return fmt.Errorf("mvcs init failed: %s", err.Error())
 		}
 		fmt.Println("mvcs init done")
@@ -60,7 +47,7 @@ func Run() error {
 			return fmt.Errorf("not enough arguments for mvcs add")
 		}
 		paths := os.Args[2:]
-		if err := runAdd(paths...); err != nil {
+		if err := commands.RunAdd(paths...); err != nil {
 			return fmt.Errorf("mvcs add failed: %s", err.Error())
 		}
 		fmt.Println("mvcs add done")
@@ -69,7 +56,7 @@ func Run() error {
 			return fmt.Errorf("not enough arguments for mvcs commit")
 		}
 		msg := os.Args[2]
-		if err := runCommit(msg); err != nil {
+		if err := commands.RunCommit(msg); err != nil {
 			return fmt.Errorf("mvcs commit failed: %s", err.Error())
 		}
 		fmt.Println("mvcs commit done")
@@ -81,15 +68,12 @@ func Run() error {
 			return fmt.Errorf("not enough arguments for mvcs cat-file")
 		}
 		hash := os.Args[2]
-		fp, err := openFile(filepath.Join(OBJ_DIR, hash))
-		if err != nil {
-			return err
-		}
-		defer fp.Close()
+    data, err := helpers.DecompressFile(filepath.Join(constants.OBJ_DIR, hash))
+    if err != nil {
+      return err
+    }
+    fmt.Println(data)
 
-		r, err := zlib.NewReader(fp)
-		io.Copy(os.Stdout, r)
-		r.Close()
 	default:
 		runHelp(program)
 		return fmt.Errorf("Invalid command '%s'", command)
