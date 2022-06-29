@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"michaelcosj/mvcs/app/constants"
 	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
@@ -31,7 +30,6 @@ func getBlobFromFile(path, file string) (*blob, error) {
 		return nil, err
 	}
 	name := filepath.Base(path)
-  fmt.Println("here: ", name)
 
 	return &blob{name, path, content, hash}, nil
 }

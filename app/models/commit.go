@@ -3,7 +3,6 @@ package models
 import (
 	"michaelcosj/mvcs/app/constants"
 	"michaelcosj/mvcs/app/helpers"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -17,32 +16,47 @@ type Commit struct {
 	parentHash string
 }
 
-func NewCommit(parent, msg string, tree *Tree) (*Commit, error) {
-	var content strings.Builder
+func NewCommit(parentHash, msg string) (*Commit, error) {
+  tree := NewTree(".")
 
-	if len(parent) == hashLength {
-		content.WriteString("parent: " + parent + "\n")
-	}
-
-	if err := tree.GenerateHash(); err != nil {
-		return nil, err
-	}
-
-	content.WriteString("tree: " + tree.hash + "\n")
-	content.WriteString("message: " + msg + "\n")
+  if len(parentHash) == 32 {
+    parentCommit, err := getCommitFromHash(parentHash)
+    if err != nil {
+      return nil, err
+    }
+    tree = parentCommit.RootTree
+  }
 
 	commit := &Commit{
-		content:    content.String(),
-		Hash:       helpers.HashStr(content.String()),
+		content:    "",
+		Hash:       "",
 		message:    msg,
 		RootTree:   tree,
-		parentHash: parent,
+		parentHash: parentHash,
 	}
-
 	return commit, nil
 }
 
-func GetCommitFromHash(hash string) (*Commit, error) {
+func (cd *Commit) GenerateHash() error {
+	var content strings.Builder
+
+	if len(cd.parentHash) == hashLength {
+		content.WriteString("parent: " + cd.parentHash + "\n")
+	}
+
+	if err := cd.RootTree.generateHash(); err != nil {
+		return err
+	}
+
+	content.WriteString("tree: " + cd.RootTree.hash + "\n")
+	content.WriteString("message: " + cd.message + "\n")
+
+	cd.content = content.String()
+	cd.Hash = helpers.HashStr(cd.content)
+	return nil
+}
+
+func getCommitFromHash(hash string) (*Commit, error) {
 	file := filepath.Join(constants.OBJ_DIR, strings.TrimSpace(hash))
 
 	content, err := helpers.DecompressFile(file)
@@ -51,10 +65,11 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 	}
 
 	data := parseCommit(content)
-	tree, err := getTreeFromHash(data.treeHash)
+
+	treeFile := filepath.Join(constants.OBJ_DIR, data.treeHash)
+	tree, err := getTreeFromFile(".", treeFile)
 	if err != nil {
 		return nil, err
-
 	}
 
 	commit := &Commit{
@@ -66,17 +81,6 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 	}
 
 	return commit, nil
-}
-
-func getTreeFromHash(hash string) (*Tree, error) {
-	treeFile := filepath.Join(constants.OBJ_DIR, hash)
-
-	repoPath, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	return getTreeFromFile(repoPath, treeFile)
 }
 
 func (cd Commit) CompressAndSave() error {

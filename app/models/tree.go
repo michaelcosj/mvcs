@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"michaelcosj/mvcs/app/constants"
 	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
@@ -60,8 +59,6 @@ func getTreeFromFile(path, file string) (*Tree, error) {
 
 		blobList = append(blobList, bl)
 	}
-
-  fmt.Println("Here: ", len(treeList), len(blobList))
 
 	return &Tree{
 		basename: filepath.Base(path),
@@ -125,12 +122,12 @@ func (t *Tree) addTree(subTr *Tree) {
 	t.treeList = append(t.treeList, subTr)
 }
 
-func (t *Tree) AddChild(child *blob) {
+func (t *Tree) addChild(child *blob) {
 	parentDir := filepath.Dir(child.path)
 
 	if t.path != parentDir && parentDir != "." {
 		subTree := NewTree(parentDir)
-		subTree.AddChild(child)
+		subTree.addChild(child)
 
 		dirs := strings.Split(parentDir, "/")
 		for i := len(dirs) - 1; i > 0; i-- {
@@ -152,16 +149,16 @@ func (t *Tree) AddChildren(files []string) error {
     if err != nil {
       return err
     }
-    t.AddChild(blob)
+    t.addChild(blob)
   }
   return nil
 }
 
-func (t *Tree) GenerateHash() error {
+func (t *Tree) generateHash() error {
 	var content strings.Builder
 
 	for _, tr := range t.treeList {
-		tr.GenerateHash()
+		tr.generateHash()
 		_, err := content.WriteString("tree: " + tr.hash + " " + tr.basename + "\n")
 		if err != nil {
 			return err

@@ -10,22 +10,6 @@ import (
 	"path/filepath"
 )
 
-// Run help command
-func runHelp(program string) {
-	fmt.Println("Usage:", program, "[command]")
-	fmt.Println(
-		"MVCS - Mediocre Version Control System\n\n" +
-			"    help                   display this help and exit \n" +
-			"    init                   initialze mvcs in a repo \n" +
-			"    status                 show the status of working tree \n" +
-			"    add <file|directory>   add a file or directory to staging area \n" +
-			"    commit <message>       commit all files or directories in the staging area \n" +
-			"    revert <commit hash>   revert back to the specified commit \n" +
-			"    history                show all commits and their info \n" +
-			"    clean                  clean all orphaned commits",
-	)
-}
-
 func Run() error {
 	if len(os.Args) < 2 {
 		return errors.New("Not enough arguments")
@@ -34,32 +18,25 @@ func Run() error {
 	program := os.Args[0]
 	command := os.Args[1]
 
+  var err error = nil
+
 	switch command {
 	case "help":
-		runHelp(program)
+		commands.RunHelp(program)
 	case "init":
-		if err := commands.RunInit(); err != nil {
-			return fmt.Errorf("mvcs init failed: %s", err.Error())
-		}
-		fmt.Println("mvcs init done")
+		err = commands.RunInit()
 	case "add":
 		if len(os.Args) < 3 {
 			return fmt.Errorf("not enough arguments for mvcs add")
 		}
 		paths := os.Args[2:]
-		if err := commands.RunAdd(paths...); err != nil {
-			return fmt.Errorf("mvcs add failed: %s", err.Error())
-		}
-		fmt.Println("mvcs add done")
+		err = commands.RunAdd(paths...)
 	case "commit":
 		if len(os.Args) < 3 {
 			return fmt.Errorf("not enough arguments for mvcs commit")
 		}
 		msg := os.Args[2]
-		if err := commands.RunCommit(msg); err != nil {
-			return fmt.Errorf("mvcs commit failed: %s", err.Error())
-		}
-		fmt.Println("mvcs commit done")
+		err = commands.RunCommit(msg)
 	case "status":
 	case "revert":
 	case "history":
@@ -73,11 +50,15 @@ func Run() error {
       return err
     }
     fmt.Println(data)
-
 	default:
-		runHelp(program)
+		commands.RunHelp(program)
 		return fmt.Errorf("Invalid command '%s'", command)
 	}
+  
+  if err != nil {
+		return fmt.Errorf("mvcs %s failed: %s", command, err.Error())
+  }
+  fmt.Printf("mvcs %s done\n", command)
 
 	return nil
 }
