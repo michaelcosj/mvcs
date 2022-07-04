@@ -12,5 +12,7 @@ const (
 	LOGS_FILE  = MVCS_DIR + "/logs"
 
 	TIME_FORMAT = "2006-01-02|15:04:05"
+
+  HASH_LEN = 32
 )
 

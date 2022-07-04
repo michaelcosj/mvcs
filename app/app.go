@@ -40,6 +40,7 @@ func Run() error {
 	case "status":
 	case "revert":
 	case "history":
+    err = commands.RunHistory()
 	case "read-hash":
 		if len(os.Args) < 3 {
 			return fmt.Errorf("not enough arguments for mvcs cat-file")

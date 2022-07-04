@@ -20,7 +20,6 @@ func RunAdd(paths ...string) error {
 		if err != nil {
 			return err
 		}
-
 		if !exists {
 			return fmt.Errorf("path %s did not match any files", path)
 		}
@@ -29,13 +28,11 @@ func RunAdd(paths ...string) error {
 		if err != nil {
 			return err
 		}
-
 		if isDir {
 			dirFiles, err := helpers.GetFilesInDir(path)
 			if err != nil {
 				return err
 			}
-
 			for _, file := range dirFiles {
         parentDir := filepath.Dir(file)
 				if parentDir != constants.MVCS_DIR && parentDir != constants.OBJ_DIR {

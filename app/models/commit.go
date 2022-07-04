@@ -10,17 +10,17 @@ import (
 type Commit struct {
 	Hash     string
 	RootTree *Tree
+	ParentHash string
+	Content    string
 
 	message    string
-	content    string
-	parentHash string
 }
 
 func NewCommit(parentHash, msg string) (*Commit, error) {
   tree := NewTree(".")
 
   if len(parentHash) == 32 {
-    parentCommit, err := getCommitFromHash(parentHash)
+    parentCommit, err := GetCommitFromHash(parentHash)
     if err != nil {
       return nil, err
     }
@@ -28,11 +28,11 @@ func NewCommit(parentHash, msg string) (*Commit, error) {
   }
 
 	commit := &Commit{
-		content:    "",
+		Content:    "",
 		Hash:       "",
 		message:    msg,
 		RootTree:   tree,
-		parentHash: parentHash,
+		ParentHash: parentHash,
 	}
 	return commit, nil
 }
@@ -40,8 +40,8 @@ func NewCommit(parentHash, msg string) (*Commit, error) {
 func (cd *Commit) GenerateHash() error {
 	var content strings.Builder
 
-	if len(cd.parentHash) == hashLength {
-		content.WriteString("parent: " + cd.parentHash + "\n")
+	if len(cd.ParentHash) == hashLength {
+		content.WriteString("parent: " + cd.ParentHash + "\n")
 	}
 
 	if err := cd.RootTree.generateHash(); err != nil {
@@ -51,12 +51,12 @@ func (cd *Commit) GenerateHash() error {
 	content.WriteString("tree: " + cd.RootTree.hash + "\n")
 	content.WriteString("message: " + cd.message + "\n")
 
-	cd.content = content.String()
-	cd.Hash = helpers.HashStr(cd.content)
+	cd.Content = content.String()
+	cd.Hash = helpers.HashStr(cd.Content)
 	return nil
 }
 
-func getCommitFromHash(hash string) (*Commit, error) {
+func GetCommitFromHash(hash string) (*Commit, error) {
 	file := filepath.Join(constants.OBJ_DIR, strings.TrimSpace(hash))
 
 	content, err := helpers.DecompressFile(file)
@@ -75,8 +75,8 @@ func getCommitFromHash(hash string) (*Commit, error) {
 	commit := &Commit{
 		Hash:       hash,
 		message:    data.message,
-		parentHash: data.parentHash,
-		content:    content,
+		ParentHash: data.parentHash,
+		Content:    content,
 		RootTree:   tree,
 	}
 
@@ -88,5 +88,5 @@ func (cd Commit) CompressAndSave() error {
 		return err
 	}
 	dstPath := filepath.Join(constants.OBJ_DIR, cd.Hash)
-	return helpers.CompressStrToFile(dstPath, cd.content)
+	return helpers.CompressStrToFile(dstPath, cd.Content)
 }
