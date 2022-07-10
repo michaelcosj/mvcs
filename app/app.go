@@ -12,61 +12,50 @@ import (
 )
 
 func Run() error {
+	program := os.Args[0]
 	if len(os.Args) < 2 {
+		commands.RunHelp(program)
 		return errors.New("Not enough arguments")
 	}
-
-	program := os.Args[0]
 	command := os.Args[1]
 
-  var err error = nil
+	if len(os.Args) < 3 {
+		switch command {
+		case "help":
+			commands.RunHelp(program)
+		case "init":
+			return commands.RunInit()
+		case "status":
+			return commands.RunStatus()
+		case "history":
+			return commands.RunHistory()
+		default:
+			return fmt.Errorf("not enough arguments for mvcs %s", command)
+		}
+	}
 
 	switch command {
-	case "help":
-		commands.RunHelp(program)
-	case "init":
-		err = commands.RunInit()
-	case "status":
-    err = commands.RunStatus()
-	case "history":
-    err = commands.RunHistory()
 	case "add":
-		if len(os.Args) < 3 {
-			return fmt.Errorf("not enough arguments for mvcs add")
-		}
 		paths := os.Args[2:]
-		err = commands.RunAdd(paths...)
+		return commands.RunAdd(paths...)
 	case "commit":
-		if len(os.Args) < 3 {
-			return fmt.Errorf("not enough arguments for mvcs commit")
-		}
 		msg := os.Args[2]
-		err = commands.RunCommit(msg)
+		return commands.RunCommit(msg)
 	case "checkout":
-		if len(os.Args) < 3 {
-			return fmt.Errorf("not enough arguments for mvcs commit")
-		}
 		commitHash := strings.TrimSpace(os.Args[2])
-    err = commands.RunCheckout(commitHash)
+		return commands.RunCheckout(commitHash)
 	case "read-hash":
-		if len(os.Args) < 3 {
-			return fmt.Errorf("not enough arguments for mvcs cat-file")
-		}
 		hash := os.Args[2]
-    data, err := helpers.DecompressFile(filepath.Join(constants.OBJ_DIR, hash))
-    if err != nil {
-      return err
-    }
-    fmt.Println(data)
+		data, err := helpers.DecompressFile(filepath.Join(constants.OBJ_DIR, hash))
+		if err != nil {
+			return err
+		}
+		fmt.Println(data)
 	default:
 		commands.RunHelp(program)
 		return fmt.Errorf("Invalid command '%s'", command)
 	}
-  
-  if err != nil {
-		return fmt.Errorf("mvcs %s failed: %s", command, err.Error())
-  }
-  fmt.Printf("mvcs %s done\n", command)
 
+	fmt.Printf("mvcs %s done\n", command)
 	return nil
 }
