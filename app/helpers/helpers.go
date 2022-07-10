@@ -65,7 +65,7 @@ func OpenFile(file string) (*os.File, error) {
 }
 
 func CreateFile(file string) error {
-	_, err := OpenFile(file)
+	_, err := os.Create(file)
 	return err
 }
 

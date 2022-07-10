@@ -34,7 +34,7 @@ func getBlobFromFile(path, file string) (*blob, error) {
 	return &blob{name, path, content, hash}, nil
 }
 
-func (fm blob) compressAndSave() error {
-	dstPath := filepath.Join(constants.OBJ_DIR, fm.hash)
-	return helpers.CompressStrToFile(dstPath, fm.content)
+func (bl blob) compressAndSave() error {
+	dstPath := filepath.Join(constants.OBJ_DIR, bl.hash)
+	return helpers.CompressStrToFile(dstPath, bl.content)
 }

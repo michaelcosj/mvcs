@@ -70,6 +70,22 @@ func getTreeFromFile(path, file string) (*Tree, error) {
 	}, nil
 }
 
+func (t Tree) Files() map[string]string {
+  files := make(map[string]string)
+
+	for _, tree := range t.treeList {
+		for path, content := range tree.Files() {
+			files[path] = content
+		}
+	}
+
+	for _, blob := range t.blobList {
+		files[blob.path] = blob.content
+	}
+
+  return files
+}
+
 func (t Tree) compressAndSave() error {
 	for _, tr := range t.treeList {
 		if err := tr.compressAndSave(); err != nil {
@@ -144,14 +160,14 @@ func (t *Tree) addChild(child *blob) {
 }
 
 func (t *Tree) AddChildren(files []string) error {
-  for _, file := range files {
-    blob, err := NewBlob(file)
-    if err != nil {
-      return err
-    }
-    t.addChild(blob)
-  }
-  return nil
+	for _, file := range files {
+		blob, err := NewBlob(file)
+		if err != nil {
+			return err
+		}
+		t.addChild(blob)
+	}
+	return nil
 }
 
 func (t *Tree) generateHash() error {

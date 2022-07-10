@@ -11,7 +11,7 @@ import (
 
 type StageEntry struct {
 	Path    string
-	modTime string
+	ModTime string
 }
 
 type Stage []StageEntry
@@ -54,7 +54,7 @@ func (sd *Stage) AddFile(file string) error {
 func (sd Stage) Save() error {
   var data strings.Builder
 	for _, entry := range sd {
-    data.WriteString(entry.Path + "\t" + entry.modTime + "\n")
+    data.WriteString(entry.Path + "\t" + entry.ModTime + "\n")
 	}
 	return helpers.WriteToFile(constants.STAGE_FILE, data.String())
 }

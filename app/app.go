@@ -8,6 +8,7 @@ import (
 	"michaelcosj/mvcs/app/helpers"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func Run() error {
@@ -25,6 +26,10 @@ func Run() error {
 		commands.RunHelp(program)
 	case "init":
 		err = commands.RunInit()
+	case "status":
+    err = commands.RunStatus()
+	case "history":
+    err = commands.RunHistory()
 	case "add":
 		if len(os.Args) < 3 {
 			return fmt.Errorf("not enough arguments for mvcs add")
@@ -37,10 +42,12 @@ func Run() error {
 		}
 		msg := os.Args[2]
 		err = commands.RunCommit(msg)
-	case "status":
-	case "revert":
-	case "history":
-    err = commands.RunHistory()
+	case "checkout":
+		if len(os.Args) < 3 {
+			return fmt.Errorf("not enough arguments for mvcs commit")
+		}
+		commitHash := strings.TrimSpace(os.Args[2])
+    err = commands.RunCheckout(commitHash)
 	case "read-hash":
 		if len(os.Args) < 3 {
 			return fmt.Errorf("not enough arguments for mvcs cat-file")
