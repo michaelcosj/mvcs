@@ -10,10 +10,10 @@ import (
 type Tree struct {
 	basename string
 	path     string
+	hash     string
+	content  string
 	treeList []*Tree
 	blobList []*blob
-	content  string
-	hash     string
 }
 
 func NewTree(path string) *Tree {
@@ -24,8 +24,8 @@ func NewTree(path string) *Tree {
 }
 
 // tree should include its own path?
-func getTreeFromFile(path, file string) (*Tree, error) {
-	hash := filepath.Base(file)
+func getTreeFromHash(path, hash string) (*Tree, error) {
+	file := filepath.Join(constants.OBJ_DIR, hash)
 	content, err := helpers.DecompressFile(file)
 	if err != nil {
 		return nil, err
@@ -34,44 +34,30 @@ func getTreeFromFile(path, file string) (*Tree, error) {
 	data := parseTree(content)
 
 	treeList := make([]*Tree, 0)
-	blobList := make([]*blob, 0)
-
 	for _, trData := range data.treeList {
-		trFile := filepath.Join(constants.OBJ_DIR, trData["hash"])
 		trPath := filepath.Join(path, trData["basename"])
-
-		subTree, err := getTreeFromFile(trPath, trFile)
+		subTree, err := getTreeFromHash(trPath, trData["hash"])
 		if err != nil {
 			return nil, err
 		}
-
 		treeList = append(treeList, subTree)
 	}
 
+	blobList := make([]*blob, 0)
 	for _, blData := range data.blobList {
 		blPath := filepath.Join(path, blData["name"])
-		blFile := filepath.Join(constants.OBJ_DIR, blData["hash"])
-
-		bl, err := getBlobFromFile(blPath, blFile)
+		bl, err := getBlobFromHash(blPath, blData["hash"])
 		if err != nil {
 			return nil, err
 		}
-
 		blobList = append(blobList, bl)
 	}
 
-	return &Tree{
-		basename: filepath.Base(path),
-		path:     path,
-		treeList: treeList,
-		blobList: blobList,
-		hash:     hash,
-		content:  content,
-	}, nil
+	return &Tree{filepath.Base(path), path, hash, content, treeList, blobList}, nil
 }
 
 func (t Tree) Files() map[string]string {
-  files := make(map[string]string)
+	files := make(map[string]string)
 
 	for _, tree := range t.treeList {
 		for path, content := range tree.Files() {
@@ -83,7 +69,7 @@ func (t Tree) Files() map[string]string {
 		files[blob.path] = blob.content
 	}
 
-  return files
+	return files
 }
 
 func (t Tree) compressAndSave() error {
@@ -121,15 +107,7 @@ func (t *Tree) findBlob(name string) (bool, *blob) {
 	return false, nil
 }
 
-func (t *Tree) addBlob(bl *blob) {
-	if found, blob := t.findBlob(bl.name); found {
-		bl.hash = blob.hash
-	}
-
-	t.blobList = append(t.blobList, bl)
-}
-
-func (t *Tree) addTree(subTr *Tree) {
+func (t *Tree) AddTree(subTr *Tree) {
 	if found, tr := t.findTree(subTr.basename); found {
 		tr.blobList = append(tr.blobList, subTr.blobList...)
 		return
@@ -152,11 +130,14 @@ func (t *Tree) addChild(child *blob) {
 			subTree = tmpTree
 		}
 
-		t.addTree(subTree)
+		t.AddTree(subTree)
 		return
 	}
 
-	t.addBlob(child)
+	if found, blob := t.findBlob(child.name); found {
+		child.hash = blob.hash
+	}
+	t.blobList = append(t.blobList, child)
 }
 
 func (t *Tree) AddChildren(files []string) error {

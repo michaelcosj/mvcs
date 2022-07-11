@@ -23,8 +23,8 @@ func NewBlob(file string) (*blob, error) {
 	return &blob{filepath.Base(file), file, content, helpers.HashStr(content)}, nil
 }
 
-func getBlobFromFile(path, file string) (*blob, error) {
-	hash := filepath.Base(file)
+func getBlobFromHash(path, hash string) (*blob, error) {
+	file := filepath.Join(constants.OBJ_DIR, hash)
 	content, err := helpers.DecompressFile(file)
 	if err != nil {
 		return nil, err

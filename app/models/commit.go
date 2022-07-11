@@ -5,59 +5,31 @@ import (
 	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Commit struct {
-	Hash     string
-	RootTree *Tree
-	ParentHash string
+	Hash       string
 	Content    string
+	RootTree   *Tree
+	Message    string
+	Timestamp  string
 
-	message    string
+	parentHash string
 }
 
-func NewCommit(parentHash, msg string) (*Commit, error) {
-  tree := NewTree(".")
-
-  if len(parentHash) == 32 {
-    parentCommit, err := GetCommitFromHash(parentHash)
-    if err != nil {
-      return nil, err
-    }
-    tree = parentCommit.RootTree
-  }
-
+func NewCommit(parentHash, msg string, tree *Tree) (*Commit, error) {
 	commit := &Commit{
-		Content:    "",
-		Hash:       "",
-		message:    msg,
+		Message:    msg,
 		RootTree:   tree,
-		ParentHash: parentHash,
+		parentHash: parentHash,
+		Timestamp:  time.Now().Format(constants.TIME_FORMAT),
 	}
 	return commit, nil
 }
 
-func (cd *Commit) GenerateHash() error {
-	var content strings.Builder
-
-	if len(cd.ParentHash) == hashLength {
-		content.WriteString("parent: " + cd.ParentHash + "\n")
-	}
-
-	if err := cd.RootTree.generateHash(); err != nil {
-		return err
-	}
-
-	content.WriteString("tree: " + cd.RootTree.hash + "\n")
-	content.WriteString("message: " + cd.message + "\n")
-
-	cd.Content = content.String()
-	cd.Hash = helpers.HashStr(cd.Content)
-	return nil
-}
-
 func GetCommitFromHash(hash string) (*Commit, error) {
-	file := filepath.Join(constants.OBJ_DIR, strings.TrimSpace(hash))
+	file := filepath.Join(constants.OBJ_DIR, hash)
 
 	content, err := helpers.DecompressFile(file)
 	if err != nil {
@@ -66,16 +38,15 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 
 	data := parseCommit(content)
 
-	treeFile := filepath.Join(constants.OBJ_DIR, data.treeHash)
-	tree, err := getTreeFromFile(".", treeFile)
+	tree, err := getTreeFromHash(".", data.treeHash)
 	if err != nil {
 		return nil, err
 	}
 
 	commit := &Commit{
 		Hash:       hash,
-		message:    data.message,
-		ParentHash: data.parentHash,
+		Message:    data.message,
+		parentHash: data.parentHash,
 		Content:    content,
 		RootTree:   tree,
 	}
@@ -83,10 +54,58 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 	return commit, nil
 }
 
-func (cd Commit) CompressAndSave() error {
-	if err := cd.RootTree.compressAndSave(); err != nil {
+func GetHeadCommit() (*Commit, error) {
+	headHash, err := helpers.GetFileContent(constants.HEAD_FILE)
+	if err != nil {
+		return nil, err
+	}
+
+	headHash = strings.TrimSpace(headHash)
+  if len(headHash) != constants.HASH_LEN {
+    return nil, nil
+  }
+  
+	return GetCommitFromHash(headHash)
+}
+
+func (cm *Commit) generateHash() error {
+	var content strings.Builder
+
+	if len(cm.parentHash) == hashLength {
+		content.WriteString("parent: " + cm.parentHash + "\n")
+	}
+
+	if err := cm.RootTree.generateHash(); err != nil {
 		return err
 	}
-	dstPath := filepath.Join(constants.OBJ_DIR, cd.Hash)
-	return helpers.CompressStrToFile(dstPath, cd.Content)
+
+	content.WriteString("tree: " + cm.RootTree.hash + "\n")
+	content.WriteString("timestamp: " + cm.Timestamp + "\n")
+	content.WriteString("message: " + cm.Message + "\n")
+
+	cm.Content = content.String()
+	cm.Hash = helpers.HashStr(cm.Content)
+
+	return nil
+}
+
+func (cm Commit) CompressAndSave() error {
+  if err := cm.generateHash(); err != nil {
+    return err
+  }
+
+	if err := cm.RootTree.compressAndSave(); err != nil {
+		return err
+	}
+
+	dstPath := filepath.Join(constants.OBJ_DIR, cm.Hash)
+	return helpers.CompressStrToFile(dstPath, cm.Content)
+}
+
+func (cm Commit) GetParent() (*Commit, error) {
+	if len(cm.parentHash) != constants.HASH_LEN {
+		return nil, nil
+	}
+
+	return GetCommitFromHash(cm.parentHash)
 }

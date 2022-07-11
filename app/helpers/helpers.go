@@ -60,10 +60,6 @@ func GetFilesInDir(dir string) ([]string, error) {
 	return files, err
 }
 
-func OpenFile(file string) (*os.File, error) {
-	return os.OpenFile(file, os.O_CREATE|os.O_RDWR, os.ModePerm)
-}
-
 func CreateFile(file string) error {
 	_, err := os.Create(file)
 	return err
@@ -82,22 +78,9 @@ func WriteToFile(file, data string) error {
 	return os.WriteFile(file, []byte(data), os.ModePerm)
 }
 
-func ClearFile(file string) error {
-	fp, err := OpenFile(file)
-	if err != nil {
-		return err
-	}
-
-	if err := fp.Truncate(0); err != nil {
-		return err
-	}
-	_, err = fp.Seek(0, io.SeekStart)
-	return err
-}
-
 func ClearFiles(paths ...string) error {
 	for _, path := range paths {
-		if err := ClearFile(path); err != nil {
+		if err := CreateFile(path); err != nil {
 			return err
 		}
 	}
