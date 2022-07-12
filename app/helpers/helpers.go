@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/mail"
 	"os"
 	"path/filepath"
 	"strings"
@@ -142,9 +143,24 @@ func DecompressStr(data string) (string, error) {
 }
 
 func DecompressFile(file string) (string, error) {
-  data, err := GetFileContent(file)
-  if err != nil {
-    return "", err
-  }
-  return DecompressStr(data)
+	data, err := GetFileContent(file)
+	if err != nil {
+		return "", err
+	}
+	return DecompressStr(data)
 }
+
+func IsValidEmail(email string) bool {
+	if _, err := mail.ParseAddress(email); err != nil {
+		return false
+	}
+	return true
+}
+
+func IsValidUsername(name string) bool {
+	if len(name) < 3 || strings.ContainsAny(name, " \n\t\r\f\v") {
+    return false
+	}
+	return true
+}
+

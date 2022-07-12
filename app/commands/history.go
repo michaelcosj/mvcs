@@ -11,6 +11,10 @@ func RunHistory() error {
 		return err
 	}
 
+  if head == nil {
+    fmt.Println("This is emptiness")
+    return nil
+  }
 	printCommit(*head, true)
 
 	parentCommit, err := head.GetParent()

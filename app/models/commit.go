@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"michaelcosj/mvcs/app/constants"
 	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
@@ -9,22 +10,27 @@ import (
 )
 
 type Commit struct {
-	Hash       string
-	Content    string
-	RootTree   *Tree
-	Message    string
-	Timestamp  string
+	Hash      string
+	Content   string
+	Author    string
+	Message   string
+	Timestamp string
+	RootTree  *Tree
 
 	parentHash string
 }
 
-func NewCommit(parentHash, msg string, tree *Tree) (*Commit, error) {
+func NewCommit(parentHash, msg, username, email string, tree *Tree) (*Commit, error) {
+	author := fmt.Sprintf("%s <%s>", username, email)
+
 	commit := &Commit{
+		Author:     author,
 		Message:    msg,
 		RootTree:   tree,
 		parentHash: parentHash,
 		Timestamp:  time.Now().Format(constants.TIME_FORMAT),
 	}
+
 	return commit, nil
 }
 
@@ -46,6 +52,7 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 	commit := &Commit{
 		Hash:       hash,
 		Message:    data.message,
+		Author:     data.author,
 		parentHash: data.parentHash,
 		Content:    content,
 		RootTree:   tree,
@@ -61,10 +68,10 @@ func GetHeadCommit() (*Commit, error) {
 	}
 
 	headHash = strings.TrimSpace(headHash)
-  if len(headHash) != constants.HASH_LEN {
-    return nil, nil
-  }
-  
+	if len(headHash) != constants.HASH_LEN {
+		return nil, nil
+	}
+
 	return GetCommitFromHash(headHash)
 }
 
@@ -80,6 +87,7 @@ func (cm *Commit) generateHash() error {
 	}
 
 	content.WriteString("tree: " + cm.RootTree.hash + "\n")
+	content.WriteString("author: " + cm.Author + "\n")
 	content.WriteString("timestamp: " + cm.Timestamp + "\n")
 	content.WriteString("message: " + cm.Message + "\n")
 
@@ -89,10 +97,10 @@ func (cm *Commit) generateHash() error {
 	return nil
 }
 
-func (cm Commit) CompressAndSave() error {
-  if err := cm.generateHash(); err != nil {
-    return err
-  }
+func (cm *Commit) CompressAndSave() error {
+	if err := cm.generateHash(); err != nil {
+		return err
+	}
 
 	if err := cm.RootTree.compressAndSave(); err != nil {
 		return err

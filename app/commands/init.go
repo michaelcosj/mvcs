@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"michaelcosj/mvcs/app/constants"
 	"michaelcosj/mvcs/app/helpers"
+	"strings"
 )
 
-func RunInit() error {
+func RunInit(configArgs []string) error {
 	pathExists, err := helpers.CheckPathExists(constants.MVCS_DIR)
 	if err != nil {
 		return fmt.Errorf("error checking mvcs dir: %w", err)
@@ -15,6 +16,11 @@ func RunInit() error {
 
 	if pathExists {
 		return errors.New(".mvcs directory already exists")
+	}
+
+	username, email, err := parseConfigArgs(configArgs)
+	if err != nil {
+		return err
 	}
 
 	if err := helpers.CreateDirs(constants.MVCS_DIR, constants.OBJ_DIR); err != nil {
@@ -25,5 +31,32 @@ func RunInit() error {
 		return fmt.Errorf("error creating mvcs files: %w", err)
 	}
 
+	config := fmt.Sprintf("username=%s\nemail=%s\n", username, email)
+	if err := helpers.WriteToFile(constants.CFG_FILE, config); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func parseConfigArgs(args []string) (string, string, error) {
+	var username, email string
+
+	for _, field := range args {
+		if strings.HasPrefix(field, "name=") {
+			username = strings.TrimSpace(strings.TrimPrefix(field, "name="))
+		} else if strings.HasPrefix(field, "email=") {
+			email = strings.TrimSpace(strings.TrimPrefix(field, "email="))
+		}
+	}
+
+	if !helpers.IsValidUsername(username) {
+		return "", "", errors.New("invalid username")
+	}
+
+	if !helpers.IsValidEmail(email) {
+		return "", "", errors.New("invalid email")
+	}
+
+	return username, email, nil
 }
