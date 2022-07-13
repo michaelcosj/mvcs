@@ -43,5 +43,5 @@ func printCommit(cm models.Commit, isHead bool) {
 
 	fmt.Printf("commit %s %s\n", cm.Hash, headSuffix)
 	fmt.Printf("timestamp: %s\n", cm.Timestamp)
-	fmt.Printf("\t%s\n\n", cm.Message)
+	fmt.Printf("\t%s\n", cm.Message)
 }

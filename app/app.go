@@ -54,7 +54,7 @@ func Run() error {
 		if err != nil {
 			return err
 		}
-		fmt.Println(data)
+		fmt.Print(data)
 	default:
 		commands.RunHelp(program)
 		return fmt.Errorf("Invalid command '%s'", command)
