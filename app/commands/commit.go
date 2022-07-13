@@ -2,7 +2,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/michaelcosj/mvcs/app/constants"
@@ -21,7 +20,6 @@ func RunCommit(msg string) error {
 
 	if head != nil {
 		parent = head.Hash
-    fmt.Println("here")
 		rootTree.AddFromTree(head.RootTree)
 	}
 
