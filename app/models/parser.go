@@ -23,15 +23,15 @@ func parseCommit(content string) commitData {
 	for _, line := range strings.Split(content, "\n") {
 		switch {
 		case strings.HasPrefix(line, "tree"):
-			treeHash = strings.TrimSpace(strings.TrimPrefix(line, "tree: "))
+			treeHash = strings.TrimSpace(strings.TrimPrefix(line, "tree:"))
 		case strings.HasPrefix(line, "message"):
-			msg = strings.TrimSpace(strings.TrimPrefix(line, "msg: "))
+			msg = strings.TrimSpace(strings.TrimPrefix(line, "message:"))
 		case strings.HasPrefix(line, "parent"):
-			parentHash = strings.TrimSpace(strings.TrimPrefix(line, "parent: "))
+			parentHash = strings.TrimSpace(strings.TrimPrefix(line, "parent:"))
 		case strings.HasPrefix(line, "author"):
-			author = strings.TrimSpace(strings.TrimPrefix(line, "author: "))
+			author = strings.TrimSpace(strings.TrimPrefix(line, "author:"))
 		case strings.HasPrefix(line, "timestamp"):
-			timestamp = strings.TrimSpace(strings.TrimPrefix(line, "timestamp: "))
+			timestamp = strings.TrimSpace(strings.TrimPrefix(line, "timestamp:"))
 		}
 	}
 
