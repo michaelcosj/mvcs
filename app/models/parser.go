@@ -9,6 +9,7 @@ type commitData struct {
 	parentHash string
 	message    string
 	author     string
+	timestamp  string
 }
 
 type treeData struct {
@@ -17,7 +18,7 @@ type treeData struct {
 }
 
 func parseCommit(content string) commitData {
-	var treeHash, parentHash, msg, author string
+	var treeHash, parentHash, msg, author, timestamp string
 
 	for _, line := range strings.Split(content, "\n") {
 		switch {
@@ -29,10 +30,12 @@ func parseCommit(content string) commitData {
 			parentHash = strings.TrimSpace(strings.TrimPrefix(line, "parent: "))
 		case strings.HasPrefix(line, "author"):
 			author = strings.TrimSpace(strings.TrimPrefix(line, "author: "))
+		case strings.HasPrefix(line, "timestamp"):
+			timestamp = strings.TrimSpace(strings.TrimPrefix(line, "timestamp: "))
 		}
 	}
 
-	return commitData{treeHash, parentHash, msg, author}
+	return commitData{treeHash, parentHash, msg, author, timestamp}
 }
 
 func parseTree(content string) treeData {

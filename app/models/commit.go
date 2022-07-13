@@ -55,6 +55,7 @@ func GetCommitFromHash(hash string) (*Commit, error) {
 		Message:    data.message,
 		Author:     data.author,
 		parentHash: data.parentHash,
+		Timestamp:  data.timestamp,
 		Content:    content,
 		RootTree:   tree,
 	}
