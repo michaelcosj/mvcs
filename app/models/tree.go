@@ -108,13 +108,9 @@ func (t *Tree) findBlob(name string) (bool, *blob) {
 	return false, nil
 }
 
-func (t *Tree) AddTree(subTr *Tree) {
-	if found, tr := t.findTree(subTr.basename); found {
-		tr.blobList = append(tr.blobList, subTr.blobList...)
-		return
-	}
-
-	t.treeList = append(t.treeList, subTr)
+func (t *Tree) AddFromTree(subTr *Tree) {
+	t.blobList = append(t.blobList, subTr.blobList...)
+	t.treeList = append(t.treeList, subTr.treeList...)
 }
 
 func (t *Tree) addChild(child *blob) {
@@ -131,7 +127,12 @@ func (t *Tree) addChild(child *blob) {
 			subTree = tmpTree
 		}
 
-		t.AddTree(subTree)
+		if found, tr := t.findTree(subTree.basename); found {
+			tr.blobList = append(tr.blobList, subTree.blobList...)
+			return
+		}
+
+		t.treeList = append(t.treeList, subTree)
 		return
 	}
 
