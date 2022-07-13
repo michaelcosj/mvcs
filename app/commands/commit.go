@@ -2,10 +2,11 @@ package commands
 
 import (
 	"errors"
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
-	"michaelcosj/mvcs/app/models"
 	"strings"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
+	"github.com/michaelcosj/mvcs/app/models"
 )
 
 func RunCommit(msg string) error {

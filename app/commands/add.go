@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
-	"michaelcosj/mvcs/app/models"
 	"path/filepath"
 	"sort"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
+	"github.com/michaelcosj/mvcs/app/models"
 )
 
 func RunAdd(paths ...string) error {

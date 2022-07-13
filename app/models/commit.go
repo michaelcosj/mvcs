@@ -2,11 +2,12 @@ package models
 
 import (
 	"fmt"
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
 )
 
 type Commit struct {

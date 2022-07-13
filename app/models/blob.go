@@ -1,9 +1,10 @@
 package models
 
 import (
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
 	"path/filepath"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
 )
 
 const hashLength = 32

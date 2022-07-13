@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"michaelcosj/mvcs/app"
+
+	"github.com/michaelcosj/mvcs/app"
 )
 
 func main() {

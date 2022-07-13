@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
-	"michaelcosj/mvcs/app/models"
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
+	"github.com/michaelcosj/mvcs/app/models"
 )
 
 

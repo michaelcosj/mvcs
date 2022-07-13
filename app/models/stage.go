@@ -1,10 +1,11 @@
 package models
 
 import (
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
 	"os"
 	"strings"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
 )
 
 // TODO maybe compress the stage

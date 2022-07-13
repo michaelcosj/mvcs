@@ -3,12 +3,13 @@ package app
 import (
 	"errors"
 	"fmt"
-	"michaelcosj/mvcs/app/commands"
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/michaelcosj/mvcs/app/commands"
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
 )
 
 func Run() error {

@@ -3,9 +3,10 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"michaelcosj/mvcs/app/constants"
-	"michaelcosj/mvcs/app/helpers"
 	"strings"
+
+	"github.com/michaelcosj/mvcs/app/constants"
+	"github.com/michaelcosj/mvcs/app/helpers"
 )
 
 func RunInit(configArgs []string) error {

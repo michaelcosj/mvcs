@@ -2,7 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"michaelcosj/mvcs/app/models"
+
+	"github.com/michaelcosj/mvcs/app/models"
 )
 
 // staged / unstaged
