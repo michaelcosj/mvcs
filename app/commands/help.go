@@ -17,4 +17,3 @@ func RunHelp(program string) {
 			"    clean                              clean all orphaned commits",
 	)
 }
-

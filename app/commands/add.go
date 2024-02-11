@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"io/fs"
 	"path/filepath"
 	"sort"
 
@@ -29,18 +30,26 @@ func RunAdd(paths ...string) error {
 		if err != nil {
 			return err
 		}
+
 		if isDir {
-			dirFiles, err := helpers.GetFilesInDir(path)
+			err = filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+
+				if !d.IsDir() {
+					parentDir := filepath.Dir(path)
+					if parentDir != constants.MVCS_DIR && parentDir != constants.OBJ_DIR {
+						if err := stage.AddFile(path); err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
+			})
 			if err != nil {
 				return err
-			}
-			for _, file := range dirFiles {
-        parentDir := filepath.Dir(file)
-				if parentDir != constants.MVCS_DIR && parentDir != constants.OBJ_DIR {
-          if err := stage.AddFile(file); err != nil {
-            return err
-          }
-				}
 			}
 		} else {
 			if err := stage.AddFile(path); err != nil {

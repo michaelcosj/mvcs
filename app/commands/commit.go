@@ -81,4 +81,3 @@ func parseConfig() (string, string, error) {
 
 	return username, email, nil
 }
-

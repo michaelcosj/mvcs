@@ -15,8 +15,13 @@ func RunStatus() error {
 		return err
 	}
 
-	for _, file := range *stage {
-		fmt.Printf("Filepath: %s\tModified: %s\n", file.Path, file.ModTime)
+	if len(*stage) > 0 {
+		for _, file := range *stage {
+			fmt.Printf("Filepath: %s\tModified: %s\n", file.Path, file.ModTime)
+		}
+	} else {
+		fmt.Println("Nothing added to the staging area")
 	}
+
 	return nil
 }

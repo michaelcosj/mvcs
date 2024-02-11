@@ -18,6 +18,7 @@ func Run() error {
 		commands.RunHelp(program)
 		return errors.New("Not enough arguments")
 	}
+
 	command := os.Args[1]
 
 	// Commands without arguments
@@ -30,14 +31,15 @@ func Run() error {
 			return commands.RunStatus()
 		case "history":
 			return commands.RunHistory()
+		default:
+			return fmt.Errorf("not enough arguments for mvcs %s", command)
 		}
-		return fmt.Errorf("not enough arguments for mvcs %s", command)
 	}
 
 	// Commands with arguments
 	switch command {
 	case "init":
-    args := os.Args[2:]
+		args := os.Args[2:]
 		return commands.RunInit(args)
 	case "add":
 		paths := os.Args[2:]
