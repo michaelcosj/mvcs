@@ -7,10 +7,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/fs"
 	"net/mail"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -43,22 +41,6 @@ func CreateDirs(dirs ...string) error {
 		}
 	}
 	return nil
-}
-
-func GetFilesInDir(dir string) ([]string, error) {
-	var files []string
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !d.IsDir() {
-			files = append(files, path)
-		}
-
-		return nil
-	})
-	return files, err
 }
 
 func CreateFile(file string) error {
@@ -159,8 +141,7 @@ func IsValidEmail(email string) bool {
 
 func IsValidUsername(name string) bool {
 	if len(name) < 3 || strings.ContainsAny(name, " \n\t\r\f\v") {
-    return false
+		return false
 	}
 	return true
 }
-
